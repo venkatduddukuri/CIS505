@@ -1,7 +1,7 @@
  @author Venkat
  *
  */
-public class DuddukuriHelloWorldApp {
+public class DuddukuriHelloWorld {
 
 	static String firstName = "Venkatarao";
 	static String lastName= "Duddukuri";
