@@ -1,4 +1,3 @@
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -51,6 +50,7 @@ public class DuddukuriGradeBookApp extends Application {
 	String rowsData = "<tr><td>firstName</td><td>lastName</td><td>course</td><td>grade</td></tr>";
 
 	public DuddukuriGradeBookApp() {
+		
 		dataLines.add(new String[] { "firstName", "lastName", "course", "grade" });
 	}
 
@@ -97,17 +97,94 @@ public class DuddukuriGradeBookApp extends Application {
 
 		primaryStage.setScene(myScene);
 		primaryStage.show();
-		
+		btnClear.setOnAction(e -> clearFormFields());
+		btnSave.setOnAction(e -> saveDataToCSV());
+		btnView.setOnAction(e -> viewData());
 
 	}
 
+	/*
+	 * this method is used to clear the form fields
+	 */
+	private void clearFormFields() {
+		this.txtFirstName.clear();
+		this.txtLastName.clear();
+		this.comboBox.setValue("");
+		this.txtCourse.clear();
 
+	}
+
+	/*
+	 * this method is used to save data to csv file
+	 */
+	public void saveDataToCSV() {
+
+		dataLines.add(new String[] { txtFirstName.getText(), txtLastName.getText(), txtCourse.getText(),
+				comboBox.getValue().toString() });
+
+		try (PrintWriter pw = new PrintWriter(csvOutputFile)) {
+			dataLines.stream().map(this::convertToCSV).forEach(pw::println);
+			this.txtFirstName.clear();
+			this.txtLastName.clear();
+			this.comboBox.setValue("");
+			this.txtCourse.clear();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
 
 	public String convertToCSV(String[] data) {
 		return Stream.of(data).collect(Collectors.joining(","));
 	}
 
-	
+	/*
+	 * this method is used to view data from csv
+	 */
+	public void viewData() {
+		Scanner sc = null;
+
+		try {
+			sc = new Scanner(new File("grades.csv"));
+			String skipHeader = sc.nextLine();
+			List<Student> listStudent = new ArrayList();
+			// sets the delimiter pattern
+			while (sc.hasNext()) // returns a boolean value
+			{
+				String[] data = sc.nextLine().split(",");
+				listStudent.add(new Student(data[0], data[1], data[2], data[3]));
+
+			}
+
+			viewDta(listStudent);
+		} catch (FileNotFoundException e) {
+			
+			e.printStackTrace();
+		} finally {
+			sc.close(); // closes the scanner
+		}
+
+	}
+
+	public void viewDta(List<Student> list) {
+		String output = "";
+		StringBuilder sb = new StringBuilder();
+		for (Student std : list) {
+			output = rowsData.replace("firstName", std.getFirstName()).replace("lastName", std.getLastName())
+					.replace("course", std.getCourse()).replace("grade", std.getGrade());
+
+			sb.append(output);
+		}
+
+		String header = "<html><table border=1><tr><th>First Name</td><th>Last Name</td><th>Course</td><th>Grade</td></tr>"
+				+ sb.toString() + "</table></html>";
+
+		JLabel newLabel = new JLabel(header);
+		JOptionPane.showMessageDialog(null, newLabel);
+	}
+
 	public static void main(String[] args) {
 		launch(args);
 	}
